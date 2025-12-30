@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
@@ -12,7 +12,7 @@ interface Word {
   hasArrived: boolean;
 }
 
-export default function Juego() {
+function JuegoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const transition = searchParams.get('transition') || 'A';
@@ -193,5 +193,17 @@ export default function Juego() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Juego() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen bg-[#959b7c] flex items-center justify-center">
+        <div className="text-white text-xl">Cargando...</div>
+      </div>
+    }>
+      <JuegoContent />
+    </Suspense>
   );
 }
