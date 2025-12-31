@@ -205,7 +205,7 @@ function JuegoContent() {
                     value={nombreUsuario}
                     onChange={(e) => setNombreUsuario(e.target.value)}
                     placeholder="Ingresa tu nombre"
-                    className="w-full px-4 py-2 border-2 border-[#6E302B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#959b7c] text-center font-semibold"
+                    className="w-full px-4 py-2 border-2 border-[#6E302B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#959b7c] text-center font-semibold text-black"
                     maxLength={30}
                   />
                 </div>
@@ -213,7 +213,7 @@ function JuegoContent() {
                   onClick={generarCertificado}
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg"
                 >
-                  🏆 Generar e Imprimir Certificado
+                  Generar e Imprimir Certificado
                 </button>
               </div>
             )}
