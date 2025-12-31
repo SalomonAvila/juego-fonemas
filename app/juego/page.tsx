@@ -33,6 +33,7 @@ function JuegoContent() {
   const [respuestaCorrecta, setRespuestaCorrecta] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [mostrarCertificado, setMostrarCertificado] = useState(false);
+  const [mostrarIntroduccion, setMostrarIntroduccion] = useState(true);
   const canvasRef = useState<HTMLCanvasElement | null>(null)[0];
 
   const cargarNuevasPalabras = async () => {
@@ -63,9 +64,10 @@ function JuegoContent() {
     }
   };
 
-  useEffect(() => {
+  const iniciarJuego = () => {
+    setMostrarIntroduccion(false);
     cargarNuevasPalabras();
-  }, []);
+  };
 
   useEffect(() => {
     if (totalPalabras >= 10) {
@@ -135,6 +137,48 @@ function JuegoContent() {
 
     img.src = '/Certificado.png';
   };
+
+  if (mostrarIntroduccion) {
+    return (
+      <div className="h-screen relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/Fondo.png"
+            alt="Fondo"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 max-w-2xl mx-4 border-4 border-[#6E302B]">
+            <div className="text-center space-y-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#6E302B] leading-tight">
+                ¡Aventura con Salomón!
+              </h1>
+              <div className="bg-[#959b7c] rounded-2xl p-6 md:p-8">
+                <p className="text-white text-xl md:text-2xl font-semibold leading-relaxed">
+                  ¡El dinosaurio Salomón quiere llegar a su cueva, acierta 10 palabras para que lo logre!
+                </p>
+              </div>
+              <button
+                onClick={iniciarJuego}
+                className="w-full bg-[#6E302B] hover:bg-[#5a2623] text-white font-bold text-xl py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                ¡Comenzar Aventura!
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              >
+                Volver al inicio
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (mostrarResultados) {
     return (
