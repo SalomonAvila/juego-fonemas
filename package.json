@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "an-array-of-spanish-words": "^2.0.0",
     "next": "16.1.1",
     "rae": "^1.0.1",
     "react": "19.2.3",

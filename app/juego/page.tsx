@@ -12,16 +12,19 @@ interface Word {
   hasArrived: boolean;
 }
 
+interface PalabrasResponse {
+  correcta: string;
+  opciones: string[];
+}
+
 function JuegoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const transition = searchParams.get('transition') || 'A';
   
-  const [words, setWords] = useState<Word[]>([
-    { id: 1, text: 'Palabra 1', targetBox: 1, isAnimating: false, hasArrived: false },
-    { id: 2, text: 'Palabra 2', targetBox: 2, isAnimating: false, hasArrived: false },
-    { id: 3, text: 'Palabra 3', targetBox: 3, isAnimating: false, hasArrived: false },
-  ]);
+  const [words, setWords] = useState<Word[]>([]);
+  const [palabraCorrecta, setPalabraCorrecta] = useState<string>('');
+  const [cargando, setCargando] = useState(true);
 
   const [aciertos, setAciertos] = useState(0);
   const [totalPalabras, setTotalPalabras] = useState(0);
@@ -29,10 +32,36 @@ function JuegoContent() {
   const [opcionSeleccionada, setOpcionSeleccionada] = useState(false);
   const [respuestaCorrecta, setRespuestaCorrecta] = useState(false);
 
+  const cargarNuevasPalabras = async () => {
+    setCargando(true);
+    try {
+      const response = await fetch(`/api/palabras`);
+      const data: PalabrasResponse = await response.json();
+      
+      setPalabraCorrecta(data.correcta);
+      
+      const nuevasWords = data.opciones.map((palabra, index) => ({
+        id: index + 1,
+        text: palabra,
+        targetBox: index + 1,
+        isAnimating: false,
+        hasArrived: false
+      }));
+      
+      setWords(nuevasWords);
+      
+      setTimeout(() => {
+        setWords(prev => prev.map(word => ({ ...word, hasArrived: true })));
+      }, 300);
+    } catch (error) {
+      console.error('Error cargando palabras:', error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    setTimeout(() => {
-      setWords(prev => prev.map(word => ({ ...word, hasArrived: true })));
-    }, 300);
+    cargarNuevasPalabras();
   }, []);
 
   useEffect(() => {
@@ -43,7 +72,8 @@ function JuegoContent() {
     }
   }, [totalPalabras]);
 
-  const handleWordClick = (isCorrect: boolean) => {
+  const handleWordClick = (palabraSeleccionada: string) => {
+    const isCorrect = palabraSeleccionada === palabraCorrecta;
     setTotalPalabras(prev => prev + 1);
     if (isCorrect) {
       setAciertos(prev => prev + 1);
@@ -54,6 +84,7 @@ function JuegoContent() {
 
   const handleContinuar = () => {
     setOpcionSeleccionada(false);
+    cargarNuevasPalabras();
   };
 
   if (mostrarResultados) {
@@ -129,32 +160,23 @@ function JuegoContent() {
           <div className="w-full max-w-xs md:max-w-sm lg:max-w-md pointer-events-auto ml-auto mr-8 md:mr-16 lg:mr-60">
             <div className="bg-white/90 backdrop-blur-sm shadow-2xl p-4 md:p-6 rounded-2xl flex flex-col gap-4 md:gap-6">
               
-              {!opcionSeleccionada ? (
+              {cargando ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-[#6E302B] text-xl font-semibold">Cargando palabras...</div>
+                </div>
+              ) : !opcionSeleccionada ? (
                 <>
-                  <div 
-                    onClick={() => handleWordClick(true)}
-                    className="bg-[#6E302B] rounded-xl p-4 md:p-6 min-h-[80px] md:min-h-[100px] flex items-center justify-center border-4 border-[#959b7c] cursor-pointer hover:border-[#FF6B35] hover:scale-105 transition-all"
-                  >
-                    <p className={`text-white text-lg md:text-xl font-semibold text-center transition-opacity duration-1000 ${words[0].hasArrived ? 'opacity-100' : 'opacity-0'}`}>
-                      {words[0].text}
-                    </p>
-                  </div>
-                  <div 
-                    onClick={() => handleWordClick(false)}
-                    className="bg-[#6E302B] rounded-xl p-4 md:p-6 min-h-[80px] md:min-h-[100px] flex items-center justify-center border-4 border-[#959b7c] cursor-pointer hover:border-[#FF6B35] hover:scale-105 transition-all"
-                  >
-                    <p className={`text-white text-lg md:text-xl font-semibold text-center transition-opacity duration-1000 ${words[1].hasArrived ? 'opacity-100' : 'opacity-0'}`}>
-                      {words[1].text}
-                    </p>
-                  </div>
-                  <div 
-                    onClick={() => handleWordClick(false)}
-                    className="bg-[#6E302B] rounded-xl p-4 md:p-6 min-h-[80px] md:min-h-[100px] flex items-center justify-center border-4 border-[#959b7c] cursor-pointer hover:border-[#FF6B35] hover:scale-105 transition-all"
-                  >
-                    <p className={`text-white text-lg md:text-xl font-semibold text-center transition-opacity duration-1000 ${words[2].hasArrived ? 'opacity-100' : 'opacity-0'}`}>
-                      {words[2].text}
-                    </p>
-                  </div>
+                  {words.map((word) => (
+                    <div 
+                      key={word.id}
+                      onClick={() => handleWordClick(word.text)}
+                      className="bg-[#6E302B] rounded-xl p-4 md:p-6 min-h-[80px] md:min-h-[100px] flex items-center justify-center border-4 border-[#959b7c] cursor-pointer hover:border-[#FF6B35] hover:scale-105 transition-all"
+                    >
+                      <p className={`text-white text-lg md:text-xl font-semibold text-center transition-opacity duration-1000 ${word.hasArrived ? 'opacity-100' : 'opacity-0'}`}>
+                        {word.text}
+                      </p>
+                    </div>
+                  ))}
                 </>
               ) : (
                 <div className="space-y-4">
@@ -167,17 +189,12 @@ function JuegoContent() {
                   </div>
                   
                   <div className="bg-[#6E302B] rounded-xl p-6 md:p-8 border-4 border-[#959b7c] animate-in fade-in duration-500">
-                    <h3 className="text-white text-xl md:text-2xl font-bold mb-2">
+                    <h3 className="text-white text-xl md:text-2xl font-bold mb-4 text-center">
                       Palabra correcta:
                     </h3>
-                    <p className="text-white text-2xl md:text-3xl font-bold text-center mb-4">
-                      {words[0].text}
+                    <p className="text-white text-3xl md:text-4xl font-bold text-center">
+                      {palabraCorrecta}
                     </p>
-                    <div className="border-t-2 border-white/30 pt-4">
-                      <p className="text-white/90 text-sm md:text-base leading-relaxed">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-                      </p>
-                    </div>
                   </div>
                   
                   <button
